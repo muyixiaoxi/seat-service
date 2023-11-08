@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"github.com/golang-jwt/jwt/v4"
+	"golang.org/x/sync/singleflight"
 	"seat-service/initialization"
 	"time"
 )
@@ -18,6 +19,7 @@ type UserClaims struct {
 }
 
 type CustomClaims struct {
+	Buffer int
 	UserClaims
 	jwt.RegisteredClaims // 内嵌标准的声明
 }
@@ -31,6 +33,7 @@ func NewJWT() *JWT {
 // GenToken 生成token
 func (j *JWT) GenToken(userClaims UserClaims) (string, error) {
 	claims := CustomClaims{
+		initialization.Config.Jwt.Buffer,
 		userClaims,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(initialization.Config.Jwt.Expires))),
@@ -58,4 +61,13 @@ func (j *JWT) ParseToken(tokenString string) (*CustomClaims, error) {
 		return claims, nil
 	}
 	return nil, errors.New("invalid token")
+}
+
+// CreateTokenByOldToken 旧token 换新token 使用归并回源避免并发问题
+func (j *JWT) CreateTokenByOldToken(oldToken string, claims UserClaims) (string, error) {
+	Control := &singleflight.Group{}
+	v, err, _ := Control.Do("JWT:"+oldToken, func() (interface{}, error) {
+		return j.GenToken(claims)
+	})
+	return v.(string), err
 }
