@@ -26,14 +26,14 @@ func Jwt() gin.HandlerFunc {
 		}
 		jwt := utils.NewJWT()
 		mc, err := jwt.ParseToken(parts[1])
-		if err != nil {
-			response.FailBasedCode(2005, "无效的Token或token已过期", gin.H{"reload": true}, c)
+		if err != nil && err.Error() != "Token is expired" {
+			response.FailBasedCode(2005, "无效的Token", gin.H{"reload": true}, c)
 			c.Abort()
 			return
 		}
 
 		//续签
-		if mc.ExpiresAt.Unix()-time.Now().Unix() < time.Now().Add(time.Hour*time.Duration(mc.Buffer)).Unix() {
+		if mc.ExpiresAt.Unix()-time.Now().Unix() < time.Now().Add(time.Hour*time.Duration(mc.Buffer)).Unix() || err.Error() == "Token is expired" {
 			newToken, _ := jwt.CreateTokenByOldToken(token, mc.UserClaims)
 			newClaims, _ := jwt.ParseToken(newToken)
 			c.Header("new-token", newToken)
