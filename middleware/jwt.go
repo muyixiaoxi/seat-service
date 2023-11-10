@@ -9,25 +9,27 @@ import (
 	"time"
 )
 
+var resp response.CustomResponse
+
 func Jwt() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("Authorization")
 		if token == "" {
-			response.FailBasedCode(2003, "未登录或非法访问", gin.H{"reload": true}, c)
+			resp.FailBasedCode(response.CodeIllegalLogin, gin.H{"reload": true})
 			c.Abort()
 			return
 		}
 		// 按空格分割
 		parts := strings.SplitN(token, " ", 2)
 		if !(len(parts) == 2 && parts[0] == "Token") {
-			response.FailBasedCode(2004, "您的帐户异地登陆或令牌失效", gin.H{"reload": true}, c)
+			resp.FailBasedCode(response.CodeLoginFailure, gin.H{"reload": true})
 			c.Abort()
 			return
 		}
 		jwt := utils.NewJWT()
 		mc, err := jwt.ParseToken(parts[1])
 		if err != nil && err.Error() != "Token is expired" {
-			response.FailBasedCode(2005, "无效的Token", gin.H{"reload": true}, c)
+			resp.FailBasedCode(response.CodeTokenInvalid, gin.H{"reload": true})
 			c.Abort()
 			return
 		}
