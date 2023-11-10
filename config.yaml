@@ -29,6 +29,7 @@ redis:
 jwt:
   signing-key: "seat"
   expires: 168
+  buffer: 24
   issuer: "seat-team"
 
 

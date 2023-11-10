@@ -2,49 +2,44 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"seat-service/response"
 	"seat-service/utils"
+	"strconv"
 	"strings"
+	"time"
 )
-
-/*
-	先检查是否携带token
-	分割token
-	判断token格式是否正确
-*/
 
 func Jwt() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.Request.Header.Get("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusOK, gin.H{
-				"code": 2003,
-				"msg":  "请求头中auth为空",
-			})
+		token := c.Request.Header.Get("Authorization")
+		if token == "" {
+			response.FailBasedCode(2003, "未登录或非法访问", gin.H{"reload": true}, c)
 			c.Abort()
 			return
 		}
 		// 按空格分割
-		parts := strings.SplitN(authHeader, " ", 2)
+		parts := strings.SplitN(token, " ", 2)
 		if !(len(parts) == 2 && parts[0] == "Token") {
-			c.JSON(http.StatusOK, gin.H{
-				"code": 2004,
-				"msg":  "请求头中auth格式有误",
-			})
+			response.FailBasedCode(2004, "您的帐户异地登陆或令牌失效", gin.H{"reload": true}, c)
 			c.Abort()
 			return
 		}
 		jwt := utils.NewJWT()
-		// parts[1]是获取到的tokenString，我们使用之前定义好的解析JWT的函数来解析它
 		mc, err := jwt.ParseToken(parts[1])
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"code": 2005,
-				"msg":  "无效的Token",
-			})
+		if err != nil && err.Error() != "Token is expired" {
+			response.FailBasedCode(2005, "无效的Token", gin.H{"reload": true}, c)
 			c.Abort()
 			return
 		}
+
+		//续签
+		if mc.ExpiresAt.Unix()-time.Now().Unix() < time.Now().Add(time.Hour*time.Duration(mc.Buffer)).Unix() || err.Error() == "Token is expired" {
+			newToken, _ := jwt.CreateTokenByOldToken(token, mc.UserClaims)
+			newClaims, _ := jwt.ParseToken(newToken)
+			c.Header("new-token", newToken)
+			c.Header("new-expires-at", strconv.FormatInt(newClaims.ExpiresAt.Unix(), 10))
+		}
+
 		// 将当前请求的username信息保存到请求的上下文c上
 		c.Set("userClaims", mc.UserClaims)
 		c.Set("id", mc.UserClaims.ID)

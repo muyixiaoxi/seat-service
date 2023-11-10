@@ -30,3 +30,10 @@ func (cr *CustomResponse) Fail(code ResCode, data interface{}) {
 		Data:    data,
 	})
 }
+func FailBasedCode(code int, message string, data interface{}, c *gin.Context) {
+	c.JSON(http.StatusOK, Response{
+		Code:    code,
+		Message: message,
+		Data:    data,
+	})
+}
