@@ -1,22 +1,29 @@
 package middleware
 
 import (
-	"github.com/casbin/casbin"
+	"github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"seat-service/utils"
 )
 
-var enforcer *casbin.Enforcer
+var Enforcer *casbin.Enforcer
 
 func init() {
 	//初始化 Casbin 和 Enforcer 适配器
 	a, err := gormadapter.NewAdapter("mysql", "mysql_username:mysql_password@tcp(127.0.0.1:3306)/", true)
 	if err != nil {
-		zap.L().Error("初始化Gorm适配器失败")
+		zap.L().Error("gormadapter.NewAdapter() is failed", zap.Error(err))
 		return
 	}
-	enforcer = casbin.NewEnforcer("../model.config", a)
+	Enforcer, err = casbin.NewEnforcer("../model.config", a)
+	if err != nil {
+		zap.L().Error("casbin.NewEnforcer() is failed", zap.Error(err))
+		return
+	}
+	//将自定义权限匹配规则加入权限认证器
+	Enforcer.AddFunction("my_func", utils.KeyMatchFunc)
 }
 
 func AuthMiddleware() gin.HandlerFunc {
@@ -29,7 +36,12 @@ func AuthMiddleware() gin.HandlerFunc {
 		requestMethod := context.Request.Method
 
 		//检查权限
-		if enforcer.Enforce(currentUser, requestPath, requestMethod) {
+		ok, err := Enforcer.Enforce(currentUser, requestPath, requestMethod)
+		if err != nil {
+			zap.L().Error("Enforcer.Enforce(sub , obj , act) if failed", zap.Error(err))
+			return
+		}
+		if ok {
 			//用户存在权限 , 继续请求处理
 			context.Next()
 		} else {
