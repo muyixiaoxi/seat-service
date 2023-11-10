@@ -11,8 +11,6 @@ import (
 	先检查是否携带token
 	分割token
 	判断token格式是否正确
-
-
 */
 
 func Jwt() gin.HandlerFunc {

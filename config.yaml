@@ -30,3 +30,6 @@ jwt:
   signing-key: "seat"
   expires: 168
   issuer: "seat-team"
+
+
+
