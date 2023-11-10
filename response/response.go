@@ -6,23 +6,27 @@ import (
 )
 
 type Response struct {
-	Code    int         `json:"code"`
+	Code    ResCode     `json:"code"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
 
-func Success(message string, data interface{}, c *gin.Context) {
-	c.JSON(http.StatusOK, Response{
-		Code:    200,
-		Message: message,
+type CustomResponse struct {
+	Context *gin.Context
+}
+
+func (cr *CustomResponse) Success(code ResCode, data interface{}) {
+	cr.Context.JSON(http.StatusOK, Response{
+		Code:    code,
+		Message: code.Msg(),
 		Data:    data,
 	})
 }
 
-func Fail(message string, data interface{}, c *gin.Context) {
-	c.JSON(http.StatusOK, Response{
-		Code:    500,
-		Message: message,
+func (cr *CustomResponse) Fail(code ResCode, data interface{}) {
+	cr.Context.JSON(http.StatusOK, Response{
+		Code:    code,
+		Message: code.Msg(),
 		Data:    data,
 	})
 }

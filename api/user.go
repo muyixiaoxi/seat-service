@@ -7,11 +7,12 @@ import (
 )
 
 var userService service.UserService
+var resp response.CustomResponse
 
 type UserApi struct {
 }
 
 func (u *UserApi) Test(c *gin.Context) {
 	a := userService.Test(1)
-	response.Success("1", a, c)
+	resp.Success(response.CodeSuccess, a)
 }

@@ -31,3 +31,6 @@ jwt:
   expires: 168
   buffer: 24
   issuer: "seat-team"
+
+
+
