@@ -6,7 +6,7 @@ import (
 	"seat-service/utils"
 )
 
-func AuthMiddlewareCasbin(srv *utils.CasbinService) gin.HandlerFunc {
+func AuthMiddlewareCasbin(srv *utils.CasbinMethod) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		err := srv.Enforcer.LoadPolicy()
 		if err != nil {

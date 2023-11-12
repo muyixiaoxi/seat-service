@@ -11,20 +11,18 @@ type Response struct {
 	Data    interface{} `json:"data"`
 }
 
-type CustomResponse struct {
-	Context *gin.Context
-}
+type CustomResponse struct{}
 
-func (cr *CustomResponse) Success(code ResCode, data interface{}) {
-	cr.Context.JSON(http.StatusOK, Response{
+func (cr *CustomResponse) Success(context *gin.Context, code ResCode, data interface{}) {
+	context.JSON(http.StatusOK, Response{
 		Code:    code,
 		Message: code.Msg(),
 		Data:    data,
 	})
 }
 
-func (cr *CustomResponse) Fail(code ResCode, data interface{}) {
-	cr.Context.JSON(http.StatusOK, Response{
+func (cr *CustomResponse) Fail(context *gin.Context, code ResCode, data interface{}) {
+	context.JSON(http.StatusOK, Response{
 		Code:    code,
 		Message: code.Msg(),
 		Data:    data,
