@@ -1,6 +1,16 @@
 package utils
 
-import "strings"
+import (
+	"github.com/casbin/casbin/v2"
+	gormadapter "github.com/casbin/gorm-adapter/v3"
+	"gorm.io/gorm"
+	"strings"
+)
+
+type CasbinService struct {
+	Enforcer *casbin.Enforcer
+	Adapter  *gormadapter.Adapter
+}
 
 // KeyMatchFunc 自定义Casbin匹配规则
 func KeyMatchFunc(args ...interface{}) (interface{}, error) {
@@ -20,4 +30,23 @@ func KeyMatch(key1, key2 string) bool {
 	}
 
 	return key1 == key2[:i]
+}
+
+// InitCasbinGorm 初始化Casbin Gorm适配器
+func InitCasbinGorm(db *gorm.DB) (*CasbinService, error) {
+	a, err := gormadapter.NewAdapterByDB(db)
+	if err != nil {
+		return nil, err
+	}
+	enforcer, err := casbin.NewEnforcer("./model.config", a)
+
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+	//将自定义权限匹配规则加入权限认证器
+	enforcer.AddFunction("my_func", KeyMatchFunc)
+	return &CasbinService{Adapter: a, Enforcer: enforcer}, nil
 }

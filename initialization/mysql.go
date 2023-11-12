@@ -1,6 +1,7 @@
 package initialization
 
 import (
+	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -20,11 +21,11 @@ func InitMysql() {
 	db, err := gorm.Open(mysql.New(mysqlConfig), &gorm.Config{})
 	if err != nil {
 		DB = nil
+		zap.L().Error("gorm.Open() if failed")
 	} else {
 		mysqldb, _ := db.DB()
 		mysqldb.SetMaxIdleConns(Config.Mysql.MaxIdleConns)
 		mysqldb.SetMaxOpenConns(Config.Mysql.MaxOpenConns)
 		DB = db
 	}
-
 }
