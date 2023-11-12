@@ -13,6 +13,7 @@ func Router() {
 	g.Use(middleware.Cors())
 	//路由组声明
 	userGroup := userRouter{}
+	authGroup := authRouter{}
 
 	//Casbin
 	casbin, err := utils.InitCasbinGorm(initialization.DB)
@@ -26,6 +27,8 @@ func Router() {
 	{
 		//用户路由组
 		userGroup.userRouterGroup(group)
+		//作者路由组
+		authGroup.authRouterGroup(group)
 	}
 
 	g.Run(":8080")

@@ -12,7 +12,7 @@ var resp response.CustomResponse
 type UserApi struct {
 }
 
-func (u *UserApi) Test(c *gin.Context) {
+func (u *UserApi) Test(context *gin.Context) {
 	a := userService.Test(1)
-	resp.Success(response.CodeSuccess, a)
+	resp.Success(context, response.CodeSuccess, a)
 }
