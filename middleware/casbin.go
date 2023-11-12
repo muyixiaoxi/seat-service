@@ -5,6 +5,7 @@ import (
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"seat-service/initialization"
 	"seat-service/utils"
 )
 
@@ -12,7 +13,8 @@ var Enforcer *casbin.Enforcer
 
 func init() {
 	//初始化 Casbin 和 Enforcer 适配器
-	a, err := gormadapter.NewAdapter("mysql", "mysql_username:mysql_password@tcp(127.0.0.1:3306)/", true)
+	dsn := initialization.Config.Mysql.Dsn()
+	a, err := gormadapter.NewAdapter("mysql", dsn, true)
 	if err != nil {
 		zap.L().Error("gormadapter.NewAdapter() is failed", zap.Error(err))
 		return
