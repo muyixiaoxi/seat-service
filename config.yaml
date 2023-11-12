@@ -1,3 +1,8 @@
+app:
+  name: "reverse_seat"
+  mode: "dev"
+  port: 8080
+
 mysql:
   path: '110.40.228.197'
   port: '3308'
@@ -22,8 +27,8 @@ zap:
   file-path: "./log/logfile.log"
 
 redis:
-  db: 0
-  addr: '127.0.0.1:6379'
+  db: 3
+  addr: '110.40.228.197:6379'
   password: ''
 
 jwt:
