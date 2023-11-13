@@ -13,6 +13,8 @@ func (*userRouter) userRouterGroup(Router *gin.RouterGroup) *gin.RouterGroup {
 	userApi := api.UserApi{}
 	{
 		user.POST("user", userApi.Test)
+		user.POST("login", userApi.Login)
+		
 	}
 
 	return user

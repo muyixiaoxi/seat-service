@@ -4,6 +4,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"seat-service/model"
 )
 
 var DB *gorm.DB
@@ -28,4 +29,7 @@ func InitMysql() {
 		mysqldb.SetMaxOpenConns(Config.Mysql.MaxOpenConns)
 		DB = db
 	}
+
+	DB.AutoMigrate(&model.RoleMenu{})
+	DB.AutoMigrate(&model.Menu{})
 }

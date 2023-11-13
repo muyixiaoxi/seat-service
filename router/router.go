@@ -14,6 +14,7 @@ func Router() {
 	//路由组声明
 	userGroup := userRouter{}
 	authGroup := authRouter{}
+	menuGroup := menuRouter{}
 
 	//Casbin
 	casbin, err := utils.InitCasbinGorm(initialization.DB)
@@ -29,6 +30,8 @@ func Router() {
 		userGroup.userRouterGroup(group)
 		//作者路由组
 		authGroup.authRouterGroup(group)
+		//菜单路由组
+		menuGroup.menuRouterGroup(group)
 	}
 
 	g.Run(":8080")
